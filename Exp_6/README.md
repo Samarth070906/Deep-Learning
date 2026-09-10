@@ -60,7 +60,6 @@ The project uses the **Forest Fire C4 Image Classification Dataset**.
 
 An additional set of **23 unlabeled tester images** was used to demonstrate predictions on unseen images.
 
-> **Note:** The dataset is not included in this repository because of its size.
 
 ---
 
@@ -331,8 +330,6 @@ Exp_6/
 |
 └── fire_smoke.env/
 ```
-
-> **Note:** `dataset/` and `fire_smoke.env/` are excluded from GitHub using `.gitignore`.
 
 ---
 
