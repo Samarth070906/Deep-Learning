@@ -12,3 +12,7 @@ __pycache__/
 
 # VS Code
 .vscode/
+
+# Exp_6 - Fire Smoke CNN
+Exp_6/dataset/
+Exp_6/fire_smoke.env/
