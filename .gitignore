@@ -16,3 +16,13 @@ __pycache__/
 # Exp_6 - Fire Smoke CNN
 Exp_6/dataset/
 Exp_6/fire_smoke.env/
+
+# Exp_7 - Transfer Learning
+7.Ttansfer_learning/.venv/
+7.Ttansfer_learning/venv/
+7.Ttansfer_learning/env/
+7.Ttansfer_learning/__pycache__/
+7.Ttansfer_learning/.vscode/
+7.Ttansfer_learning/saved_models/
+7.Ttansfer_learning/*.pth
+7.Ttansfer_learning/*.pt
