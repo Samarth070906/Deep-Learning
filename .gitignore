@@ -18,11 +18,11 @@ Exp_6/dataset/
 Exp_6/fire_smoke.env/
 
 # Exp_7 - Transfer Learning
-7.Ttansfer_learning/.venv/
-7.Ttansfer_learning/venv/
-7.Ttansfer_learning/env/
-7.Ttansfer_learning/__pycache__/
-7.Ttansfer_learning/.vscode/
-7.Ttansfer_learning/saved_models/
-7.Ttansfer_learning/*.pth
-7.Ttansfer_learning/*.pt
+Exp_7/.venv/
+Exp_7/venv/
+Exp_7/env/
+Exp_7/__pycache__/
+Exp_7/.vscode/
+Exp_7/saved_models/
+Exp_7/*.pth
+Exp_7/*.pt
