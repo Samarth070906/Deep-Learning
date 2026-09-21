@@ -26,3 +26,11 @@ Exp_7/.vscode/
 Exp_7/saved_models/
 Exp_7/*.pth
 Exp_7/*.pt
+
+# Exp_4 - LSTM Time Series
+Exp_4/Dataset/
+Exp_4/venv/
+
+# Exp_5 - RNN/LSTM/GRU Classification
+Exp_5/Dataset/
+Exp_5/Exp_5.venv/
