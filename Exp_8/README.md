@@ -213,12 +213,4 @@ def predict_sentiment(text):
 
 This experiment demonstrates how a pre-trained **BERT (`bert-base-uncased`)** model can be fine-tuned for binary sentiment classification on Amazon product reviews. The reviews were tokenized using the BERT WordPiece tokenizer, and the model was adapted to distinguish between **Negative** and **Positive** sentiments. Evaluation was performed using accuracy, precision, recall, F1-score, and a confusion matrix. Custom review examples were also tested to demonstrate real-world sentiment prediction capability.
 
-### Key Learning Outcomes
-- Understanding pre-trained Transformer models (BERT)
-- Using a BERT tokenizer for text preprocessing
-- Fine-tuning BERT for text classification using Hugging Face Trainer
-- Leveraging GPU acceleration for deep learning
-- Evaluating NLP classification models with multiple metrics
-- Performing sentiment prediction on new, unseen text
-
 ---
