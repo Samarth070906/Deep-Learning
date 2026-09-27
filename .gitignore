@@ -34,3 +34,9 @@ Exp_4/venv/
 # Exp_5 - RNN/LSTM/GRU Classification
 Exp_5/Dataset/
 Exp_5/Exp_5.venv/
+
+# Exp_8 - BERT Amazon Reviews
+Exp_8/bert_venv/
+Exp_8/bert_amazon_sentiment_model/
+Exp_8/bert_amazon_results/
+
