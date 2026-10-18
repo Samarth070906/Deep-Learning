@@ -40,3 +40,9 @@ Exp_8/bert_venv/
 Exp_8/bert_amazon_sentiment_model/
 Exp_8/bert_amazon_results/
 
+
+# Exp_9 - ViT vs CNN CIFAR10
+Exp_9/Exp_9env/
+
+Exp_9/data/
+
