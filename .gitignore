@@ -46,3 +46,12 @@ Exp_9/Exp_9env/
 
 Exp_9/data/
 
+
+# Exp_10 - Audio Classification STT TTS
+Exp_10/Exp10env/
+Exp_10/data/
+
+Exp_10/LJSpeech-1.1/
+Exp_10/ljspeech_feature_cache/
+Exp_10/*.pth
+

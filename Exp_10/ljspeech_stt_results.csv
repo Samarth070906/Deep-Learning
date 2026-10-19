@@ -1,0 +1,2 @@
+test_WER,test_CER,train_samples,validation_samples,test_samples,epochs,device
+0.9242718446601942,0.4933506325008109,240,30,30,25,cuda
