@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import librosa
+import difflib
 
 # Configuration (must match training parameters)
 SAMPLE_RATE = 16000
@@ -17,6 +18,43 @@ ID_TO_CHAR = {i: c for i, c in enumerate(CHARS)}
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# Model 1: CRNN (Conv1D + BiLSTM)
+class CRNNCTC(nn.Module):
+    def __init__(self, in_features=N_MELS, conv_channels=128, rnn_hidden=256, num_rnn_layers=2, num_classes=len(CHARS)+1):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv1d(in_features, conv_channels, kernel_size=5, padding=2),
+            nn.BatchNorm1d(conv_channels),
+            nn.GELU(),
+            nn.Dropout(0.15),
+            nn.Conv1d(conv_channels, conv_channels, kernel_size=5, padding=2),
+            nn.BatchNorm1d(conv_channels),
+            nn.GELU(),
+            nn.Dropout(0.15),
+        )
+        self.lstm = nn.LSTM(
+            input_size=conv_channels,
+            hidden_size=rnn_hidden,
+            num_layers=num_rnn_layers,
+            batch_first=True,
+            bidirectional=True,
+            dropout=0.25 if num_rnn_layers > 1 else 0.0
+        )
+        self.layer_norm = nn.LayerNorm(rnn_hidden * 2)
+        self.dropout = nn.Dropout(0.2)
+        self.fc = nn.Linear(rnn_hidden * 2, num_classes)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+        conv_out = self.conv(x)
+        rnn_in = conv_out.transpose(1, 2)
+        rnn_out, _ = self.lstm(rnn_in)
+        out = self.layer_norm(rnn_out)
+        out = self.dropout(out)
+        logits = self.fc(out)
+        return logits.log_softmax(dim=-1)
+
+# Model 2: Baseline BiLSTM (fallback)
 class BiLSTMCTC(nn.Module):
     def __init__(self, input_dim=N_MELS, hidden_dim=128, num_layers=2, num_classes=len(CHARS)+1):
         super().__init__()
@@ -54,25 +92,63 @@ def greedy_decode(log_probs, lengths):
         outputs.append("".join(chars).strip())
     return outputs
 
-def transcribe(wav_path, model_path="ljspeech_stt_model_final.pth"):
-    checkpoint = torch.load(model_path, map_location=DEVICE)
-    model = BiLSTMCTC().to(DEVICE)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
+def lexicon_correct(text, lexicon):
+    if not lexicon:
+        return text
+    words = text.split()
+    corrected = []
+    for w in words:
+        if len(w) <= 2:
+            corrected.append(w)
+            continue
+        matches = difflib.get_close_matches(w, lexicon, n=1, cutoff=0.65)
+        if matches:
+            corrected.append(matches[0])
+        else:
+            corrected.append(w)
+    return " ".join(corrected)
 
+def load_stt_model(model_path=None):
+    if model_path is None:
+        if Path("ljspeech_crnn_best.pth").exists():
+            model_path = "ljspeech_crnn_best.pth"
+        elif Path("ljspeech_bilstm_ctc_best.pth").exists():
+            model_path = "ljspeech_bilstm_ctc_best.pth"
+        else:
+            model_path = "ljspeech_stt_model_final.pth"
+
+    checkpoint = torch.load(model_path, map_location=DEVICE, weights_only=False)
+    lexicon = checkpoint.get("lexicon", None)
+    
+    # Identify whether it's CRNN or BiLSTM by checking state dict keys
+    state_dict = checkpoint.get("model_state_dict", checkpoint)
+    if "conv.0.weight" in state_dict:
+        model = CRNNCTC().to(DEVICE)
+        model_name = "CRNN (Conv1D + BiLSTM)"
+    else:
+        model = BiLSTMCTC().to(DEVICE)
+        model_name = "BiLSTM-CTC Baseline"
+        
+    model.load_state_dict(state_dict)
+    model.eval()
+    return model, lexicon, model_name, model_path
+
+def transcribe(wav_path, model_path=None):
+    model, lexicon, model_name, resolved_path = load_stt_model(model_path)
     feat = extract_features(wav_path)
     x = torch.tensor(feat, dtype=torch.float32).unsqueeze(0).to(DEVICE)
     lengths = torch.tensor([feat.shape[0]], dtype=torch.long)
 
     with torch.no_grad():
         pred_text = greedy_decode(model(x).transpose(0, 1), lengths)[0]
-    return pred_text
+    
+    corrected_text = lexicon_correct(pred_text, lexicon) if lexicon else pred_text
+    return pred_text, corrected_text, model_name, resolved_path
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         audio_file = sys.argv[1]
     else:
-        # Default test sample from LJSpeech dataset
         test_wavs = list(Path("LJSpeech-1.1/wavs").glob("*.wav"))
         if test_wavs:
             audio_file = str(test_wavs[0])
@@ -86,9 +162,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print(f"Transcribing '{audio_file}' on {DEVICE}...")
-    result = transcribe(audio_file)
+    greedy_pred, lex_pred, arch, mpath = transcribe(audio_file)
 
-    # Check for reference text if sample is from LJSpeech
     ref_text = None
     meta_path = Path("LJSpeech-1.1/metadata.csv")
     if meta_path.exists():
@@ -100,8 +175,10 @@ if __name__ == "__main__":
                     ref_text = parts[2] if len(parts) > 2 else parts[1]
                     break
 
-    print("=" * 60)
+    print("=" * 65)
+    print(f"Model Architecture : {arch} ({mpath})")
     if ref_text:
-        print("Reference Text :", ref_text)
-    print("Recognized Text:", result)
-    print("=" * 60)
+        print("Reference Text     :", ref_text)
+    print("Greedy Acoustic    :", greedy_pred)
+    print("Lexicon-Assisted   :", lex_pred)
+    print("=" * 65)

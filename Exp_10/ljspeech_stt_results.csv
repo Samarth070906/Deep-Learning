@@ -1,2 +1,4 @@
-test_WER,test_CER,train_samples,validation_samples,test_samples,epochs,device
-0.9242718446601942,0.4933506325008109,240,30,30,25,cuda
+model,decoding,test_WER,test_CER,train_samples,validation_samples,test_samples,epochs,device,val_loss
+Baseline_BiLSTM,Greedy,0.9243,0.4934,240,30,30,25,cuda,1.7512
+Optimized_CRNN,Greedy,0.5653,0.1967,800,100,100,35,cuda,0.6572
+Optimized_CRNN,Lexicon_Assisted,0.4677,0.2363,800,100,100,35,cuda,0.6572
